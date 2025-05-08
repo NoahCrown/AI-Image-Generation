@@ -1,7 +1,17 @@
+/**
+ * Home page for the Community Showcase.
+ * Fetches and displays AI-generated images, with search and loading states.
+ */
+
 import React, {useState, useEffect} from 'react'
 import {Loader, Card, FormField} from '../components'
 
-
+/**
+ * Renders a list of Card components or a fallback title if no data is present.
+ * @param {Object[]} data - Array of post objects to display.
+ * @param {string} title - Title to show if no data is present.
+ * @returns {JSX.Element}
+ */
 const RenderCards = ({data, title}) => {
   if (data?.length > 0) {
     return data.map((post) => <Card key={post._id} {...post}/>)
@@ -9,12 +19,16 @@ const RenderCards = ({data, title}) => {
 
   return (
     <h2 className='mt-5 font-bold text-[#6469ff] text-xl uppercase'>
-      CARD
+      {title}
     </h2>
   )
-
 }
 
+/**
+ * Home component for displaying and searching posts.
+ * Handles data fetching, search debounce, and conditional rendering.
+ * @returns {JSX.Element}
+ */
 const Home = () => {
   const [loading, setLoading] = useState(false);
   const [allPost, setAllPost] = useState(null)
@@ -22,8 +36,7 @@ const Home = () => {
   const [searchedResults, setSearchedResults] = useState(null)
   const [searchTimeout, setSearchTimeout] = useState(null)
 
-
-
+  // Fetch posts from the backend API on mount
   useEffect(() => {
     const fetchPost = async() => {
       setLoading(true)
@@ -37,6 +50,7 @@ const Home = () => {
 
         if (response.ok){
           const result = await response.json()
+          // Reverse to show latest posts first
           setAllPost(result.data.reverse())
         }
         
@@ -51,18 +65,22 @@ const Home = () => {
     fetchPost()
   }, [])
 
+  /**
+   * Handles search input changes with debounce.
+   * Filters posts by name or prompt.
+   */
   const handleSearchChange = (e) => {
     setSearchText(e.target.value)
 
     setSearchTimeout(
       setTimeout(() => {
-
-      const searchResults = allPost.filter((item) => item.name.toLowerCase().includes(searchText.toLowerCase()) || item.prompt.toLowerCase().includes(searchText.toLowerCase()))
-
-      setSearchedResults(searchResults)
-
-    }, 500))
-    
+        const searchResults = allPost.filter((item) => 
+          item.name.toLowerCase().includes(searchText.toLowerCase()) ||
+          item.prompt.toLowerCase().includes(searchText.toLowerCase())
+        )
+        setSearchedResults(searchResults)
+      }, 500)
+    )
   } 
 
   return (
@@ -87,7 +105,6 @@ const Home = () => {
         {loading ? 
         <div className='flex justify-center items-center'>
           <Loader/>
-
         </div> : 
         <>
           {searchText && (<h2 className='font-medium text-[#666e75] text-xl mb-3'> 
@@ -100,15 +117,10 @@ const Home = () => {
             :
             <RenderCards data={allPost} title='No Post Found'/>
             }
-            
-
           </div>
         </>
-        
         }
-
       </div>
-
     </section>
   )
 }
